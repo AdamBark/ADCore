@@ -9,6 +9,9 @@
 # % macro, ADDR, Asyn Port address
 # % macro, TIMEOUT, Timeout
 
+# This associates the template with an edm screen
+# % gui, $(PORT), edmtab, NDAttribute.edl, P=$(P),R=$(R)
+
 include "NDPluginBase.template"
 
 record(bo, "$(P)$(R)Reset")

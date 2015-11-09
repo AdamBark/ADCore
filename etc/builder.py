@@ -651,6 +651,118 @@ class NDOverlay(AsynPort):
 #############################
 
 @includesTemplates(NDPluginBaseTemplate)
+class NDAttributeTemplate(AutoSubstitution):
+    """Template containing the records for an NDAttribute"""
+    TemplateFile = 'NDAttribute.template'
+
+class NDAttributeNTemplate(AutoSubstitution):
+    """Template containing the records for an NDAttribute"""
+    TemplateFile = 'NDAttributeN.template'
+
+class NDPluginAttribute(AsynPort):
+    """This plugin writes overlays on the array, like cursors and boxes"""
+    # This tells xmlbuilder to use PORT instead of name as the row ID
+    UniqueName = "PORT"
+    _SpecificTemplate = NDAttributeTemplate
+    NAttributes = 8
+
+    def __init__(self, PORT, NDARRAY_PORT, QUEUE = 2, BLOCK = 0,
+                 NDARRAY_ADDR = 0, BUFFERS = 50, MEMORY = 0, ATTR_NAME1 = "",
+                 ATTR_NAME2 = "", ATTR_NAME3 = "", ATTR_NAME4 = "",
+                 ATTR_NAME5 = "", ATTR_NAME6 = "", ATTR_NAME7 = "",
+                 ATTR_NAME8 = "", **args):
+        # Init the superclass (AsynPort)
+        self.__super.__init__(PORT)
+        # Update the attributes of self from the commandline args
+        self.__dict__["NAttributes"] = self.NAttributes
+        self.__dict__.update(locals())
+        # Make an instance of our template
+        makeTemplateInstance(self._SpecificTemplate, locals(), args)
+        # Create some overlays
+        for i in range(self.NAttributes):
+            NDAttributeNTemplate(P = args["P"], R = "%s%d:" % (args["R"], i + 1),
+                                 NCHANS=NCHANS, PORT = PORT, ADDR = i,
+                                 TIMEOUT = args["TIMEOUT"])
+
+    ArgInfo = _SpecificTemplate.ArgInfo + makeArgInfo(
+        __init__,
+        PORT = Simple('Port name for the NDPluginAttribute plugin', str),
+        QUEUE = Simple('Input array queue size', int),
+        BLOCK = Simple('Blocking callbacks?', int),
+        NDARRAY_PORT = Ident('Input array port', AsynPort),
+        NDARRAY_ADDR = Simple('Input array port address', int),
+        ATTR_NAME1 = Simple('First NDAttribute name to retrieve from NDArray'),
+        ATTR_NAME2 = Simple('Second NDAttribute name to retrieve from NDArray'),
+        ATTR_NAME3 = Simple('Third NDAttribute name to retrieve from NDArray'),
+        ATTR_NAME4 = Simple('Fourth NDAttribute name to retrieve from NDArray'),
+        ATTR_NAME5 = Simple('Fifth NDAttribute name to retrieve from NDArray'),
+        ATTR_NAME6 = Simple('Sixth NDAttribute name to retrieve from NDArray'),
+        ATTR_NAME7 = Simple('Seventh NDAttribute name to retrieve from NDArray'),
+        ATTR_NAME8 = Simple('Eighth NDAttribute name to retrieve from NDArray'),
+        BUFFERS = Simple('Max buffers to allocate', int),
+        MEMORY = Simple('Max memory to allocate, should be maxw*maxh*nbuffer for driver and all attached plugins', int))
+
+    def Initialise(self):
+        print '# NDAttrConfigure(portName, queueSize, blockingCallbacks, NDArrayPort, NDArrayAddr, maxAttributes, maxBuffers, maxMemory)'
+        print 'NDAttrConfigure("%(PORT)s", %(QUEUE)d, %(BLOCK)d, "%(NDARRAY_PORT)s", %(NDARRAY_ADDR)s, %(NAttributes)d, %(BUFFERS)d, %(MEMORY)d)' % self.__dict__
+
+    def PostIocInitialise(self):
+        for i in xrange(1, self.NAttributes+1):
+            val = self.__dict__["ATTR_NAME%d" % i]
+            print "dbpf %s%s%d:AttrName %s" % (self.P, self.R, i, val)
+
+#############################
+
+@includesTemplates(NDPluginBaseTemplate)
+class NDROIStatTemplate(AutoSubstitution):
+    """Template containing the records for an NDROIStat"""
+    TemplateFile = 'NDROIStat.template'
+
+class NDROIStatNTemplate(AutoSubstitution):
+    """Template containing the records for an NDROIStat"""
+    TemplateFile = 'NDROIStatN.template'
+
+class NDPluginROIStat(AsynPort):
+    """This plugin writes overlays on the array, like cursors and boxes"""
+    # This tells xmlbuilder to use PORT instead of name as the row ID
+    UniqueName = "PORT"
+    _SpecificTemplate = NDROIStatTemplate
+    NROIStats = 8
+
+    def __init__(self, PORT, NDARRAY_PORT, QUEUE = 2, BLOCK = 0,
+                 NDARRAY_ADDR = 0, MAX_ROIS = 8, BUFFERS = 50,
+                 MEMORY = 0, **args):
+        # Init the superclass (AsynPort)
+        self.__super.__init__(PORT)
+        # Update the attributes of self from the commandline args
+        self.__dict__["NROIStats"] = self.NROIStats
+        self.__dict__.update(locals())
+        # Make an instance of our template
+        makeTemplateInstance(self._SpecificTemplate, locals(), args)
+        # Create some overlays
+        for i in range(self.NROIStats):
+            NDROIStatNTemplate(P = args["P"], R = "%s%d:" % (args["R"], i + 1),
+                                 NCHANS=NCHANS, PORT = PORT, ADDR = i,
+                                 TIMEOUT = args["TIMEOUT"])
+
+    ArgInfo = _SpecificTemplate.ArgInfo + makeArgInfo(
+        __init__,
+        PORT = Simple('Port name for the NDPluginROIStat plugin', str),
+        QUEUE = Simple('Input array queue size', int),
+        BLOCK = Simple('Blocking callbacks?', int),
+        NDARRAY_PORT = Ident('Input array port', AsynPort),
+        NDARRAY_ADDR = Simple('Input array port address', int),
+        MAX_ROIS = Simple('Maximum number of ROIs in this plugin', int)
+        BUFFERS = Simple('Max buffers to allocate', int),
+        MEMORY = Simple('Max memory to allocate, should be maxw*maxh*nbuffer for driver and all attached plugins', int))
+
+    def Initialise(self):
+        print '# NDROIStatConfigure(portName, queueSize, blockingCallbacks, NDArrayPort, NDArrayAddr, maxROIs, maxBuffers, maxMemory)'
+        print 'NDROIStatConfigure("%(PORT)s", %(QUEUE)d, %(BLOCK)d, "%(NDARRAY_PORT)s", %(NDARRAY_ADDR)s, %(MAX_ROIS)d, %(BUFFERS)d, %(MEMORY)d)' % self.__dict__
+
+#############################
+
+@includesTemplates(NDPluginBaseTemplate)
 class NDColorConvertTemplate(AutoSubstitution):
     """Template containing the records for an NDColorConvert"""
     TemplateFile = 'NDColorConvert.template'
